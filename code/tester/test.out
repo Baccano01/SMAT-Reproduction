@@ -1,0 +1,45 @@
+Input: [../mtx_mrkt_csr/test/samples/m_05_05_crg.mm]
++ CSR: ok ✓
++ COO: ok ✓
++ ELL: ok ✓
++ DIA: ok ✓
+Input: [../mtx_mrkt_csr/test/samples/sample2.mm]
++ CSR: ok ✓
++ COO: ok ✓
++ ELL: ok ✓
++ DIA: ok ✓
+Input: [../mtx_mrkt_csr/test/samples/m_05_05_crs.mm]
++ CSR: ok ✓
++ COO: ok ✓
++ ELL: ok ✓
++ DIA: ok ✓
+Input: [../mtx_mrkt_csr/test/samples/gr_900_900_crg.mm]
++ CSR: ok ✓
++ COO: ok ✓
++ ELL: ok ✓
++ DIA: ok ✓
+Input: [../mtx_mrkt_csr/test/samples/gre_343_343_crg.mm]
++ CSR: ok ✓
++ COO: ok ✓
++ ELL: ok ✓
++ DIA: ok ✓
+Input: [../mtx_mrkt_csr/test/samples/sample1.mm]
++ CSR: ok ✓
++ COO: ok ✓
++ ELL: ok ✓
++ DIA: ok ✓
+Input: [../mtx_mrkt_csr/test/samples/m_05_05_crk.mm]
++ CSR: ok ✓
++ COO: ok ✓
++ ELL: ok ✓
++ DIA: ok ✓
+Input: [../mtx_mrkt_csr/test/samples/west_67_67_crg.mm]
++ CSR: ok ✓
++ COO: ok ✓
++ ELL: ok ✓
++ DIA: ok ✓
+Input: [../mtx_mrkt_csr/test/samples/Fashion_MNIST_norm_10NN.mtx]
++ CSR: ok ✓
++ COO: ok ✓
++ ELL: ok ✓
++ DIA: ok ✓
