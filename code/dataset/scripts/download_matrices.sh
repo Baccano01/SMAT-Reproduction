@@ -1,0 +1,12 @@
+aria2c \
+    --input-file=aria2_input.txt \
+    --continue=true \
+    --max-connection-per-server=4 \
+    --split=4 \
+    --max-concurrent-downloads=8 \
+    --retry-wait=10 \
+    --max-tries=0 \
+    --auto-file-renaming=false \
+    --allow-overwrite=false \
+    --log=aria2.log --log-level=info \
+    --summary-interval=30
