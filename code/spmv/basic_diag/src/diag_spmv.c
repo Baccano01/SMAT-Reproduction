@@ -7,6 +7,7 @@
  * Copyright 2026 Jofeth Abello
  */
 
+#include <scorep/SCOREP_User.h>  // manual instrumentation
 #include "../../../convert_utils/param_verify.h"
 #include <errno.h>
 #include <stdint.h>
@@ -23,7 +24,7 @@
  * - *IOFF is increasing order.
  */
 void diag_spmv(double **DIAG, int **IOFF, int max_diag_len, int ndiags, int M,
-               int N, double **v, double **out) {
+               int N, double **v, double **out, int repetitions) {
   if (max_diag_len <= 0) {
     fprintf(stderr, "%s:%s:%d: 'max_diag_len' (%d) <= 0\n", __FILE__, __func__,
             __LINE__, max_diag_len);
@@ -74,20 +75,31 @@ void diag_spmv(double **DIAG, int **IOFF, int max_diag_len, int ndiags, int M,
    */
   int i, diag_offset, row_start, col_start;
   int diag_len, d;
-  for (i = 0; i < ndiags; i++) {
-    diag_offset = (*IOFF)[i];
 
-    /* if lower diagonal then row_start is > 0 based
-     * on Invariant 2 */
-    row_start = max(0, -diag_offset);
+  SCOREP_USER_REGION_BEGIN(
+        spmv_region,
+        "DIA SpMV",
+        SCOREP_USER_REGION_TYPE_COMMON
+  );
 
-    /* if upper diagonal then col_start is > 0 based
-     * on Invariant 3 */
-    col_start = max(0, diag_offset);
-    diag_len = min(M - row_start, N - col_start);
-    for (d = 0; d < diag_len; d++)
-      (*out)[row_start + d] += (*DIAG)[d * ndiags + i] * (*v)[col_start + d];
+  for (int r = 0; r < repetitions; r++) {
+      for (i = 0; i < ndiags; i++) {
+        diag_offset = (*IOFF)[i];
+
+        /* if lower diagonal then row_start is > 0 based
+         * on Invariant 2 */
+        row_start = max(0, -diag_offset);
+
+        /* if upper diagonal then col_start is > 0 based
+         * on Invariant 3 */
+        col_start = max(0, diag_offset);
+        diag_len = min(M - row_start, N - col_start);
+        for (d = 0; d < diag_len; d++)
+          (*out)[row_start + d] += (*DIAG)[d * ndiags + i] * (*v)[col_start + d];
+      }
   }
+
+  SCOREP_USER_REGION_END(spmv_region);
 }
 
 #if UNIT_TEST_DIAG_SPMV
@@ -102,13 +114,14 @@ void diag_spmv(double **DIAG, int **IOFF, int max_diag_len, int ndiags, int M,
  * where 'n' is an integer and 'a' is a double.
  */
 int main(int argc, char *argv[]) {
-  if (argc < 3) {
-    fprintf(stderr, "USAGE: ./a.out [filename] \"[x1, x2, ..., xn]\"\n");
+  if (argc < 4) {
+    fprintf(stderr, "USAGE: ./a.out [filename] \"[x1, x2, ..., xn]\" [repetitions]\n");
     return EXIT_FAILURE;
   }
 
   DoubleVec v;
   char *filename, *vect_str;
+  int input_repetitions;
 
   /* CSR */
   double *A, *out;
@@ -116,6 +129,7 @@ int main(int argc, char *argv[]) {
 
   filename = argv[1];
   vect_str = argv[2];
+  input_repetitions = argv[3];
 
   /* parses the sparse matrix */
   M = mtx_mrkt2csr(filename, &A, &J, &I);
@@ -138,13 +152,28 @@ int main(int argc, char *argv[]) {
   /* parses the vector */
   parse_double_vector(vect_str, &v);
 
+  /* WARM-UP */
+  int repetitions;
+  repetitions = 1;
   out = NULL;
-  diag_spmv(&DIAG, &IOFF, *max_diag_len, ndiags, M - 1, N, &(v.data), &out);
 
+  diag_spmv(&DIAG, &IOFF, *max_diag_len, ndiags, M - 1,
+            N, &(v.data), &out, repetitions);
+  free(out);
+
+  /* MEASURE WITH REPETITION */
+  repetitions = input_repetitions;
+  out = NULL;
+  diag_spmv(&DIAG, &IOFF, *max_diag_len, ndiags, M - 1,
+            N, &(v.data), &out, repetitions);
+
+#if 0
   for (int i = 0; i < M - 1; i++) {
     printf(" [%lg]", out[i]);
   }
   printf("\n");
+#endif
+
   free(out);
 
   dv_free(&v);

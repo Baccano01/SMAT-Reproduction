@@ -126,15 +126,18 @@ unit_test: clean $(OBJS)
 # ============================================
 WRAPPER ?=
 
-$(OBJ_DIR_SCOREP)/diag_spmv.o: WRAPPER := scorep
+# uncomment below if automatic source-code instrumentation is used instead
+# $(OBJ_DIR_SCOREP)/diag_spmv.o: WRAPPER := scorep
 
 $(OBJ_DIR_SCOREP)/%.o: %.c
 	$(Q)mkdir -p $(OBJ_DIR_SCOREP)
 	$(Q)echo "CC $<"
 	$(Q)$(WRAPPER) $(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
-scorep_build: LINK_WRAPPER := scorep
-scorep_build: CFLAGS += -DUNIT_TEST_DIAG_SPMV -g -O2
+LINK_WRAPPER ?=
+# uncomment below if automatic source-code instrumentation is used instead
+# scorep_build: LINK_WRAPPER := scorep
+scorep_build: CFLAGS += -DUNIT_TEST_DIAG_SPMV -g -O3 -march=native -DSCOREP_USER_ENABLE
 scorep_build: scorep_clean $(OBJS_SCOREP)
 	$(Q)$(LINK_WRAPPER) $(CC) $(OBJS_SCOREP) -o $@ -lm
 
