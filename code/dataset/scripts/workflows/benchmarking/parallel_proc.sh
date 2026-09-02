@@ -65,7 +65,7 @@ process_file() {
         # Execute your program
         ./"$executable" "$mtx_file_path" "[1@$col_count]" "$reps"
         
-    } < "$file" > "$checksum_file"
+    done < "$file" > "$checksum_file"
 }
 export -f process_file
 
