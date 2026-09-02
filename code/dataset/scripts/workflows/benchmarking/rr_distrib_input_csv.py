@@ -5,7 +5,7 @@ NUM_FILES = 32
 
 dest_dir = input("Enter dest dir path: ")
 input_file = input("Enter csv file: ")
-base_name = input_file.removesuffix(".csv")
+base_name = input_file.removesuffix(".csv").removeprefix("../")
 
 with open(input_file, "r", encoding="utf-8") as f:
     reader = csv.reader(f)
