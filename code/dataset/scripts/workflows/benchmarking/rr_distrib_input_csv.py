@@ -12,7 +12,7 @@ with open(input_file, "r", encoding="utf-8") as f:
     header = next(reader, None)
 
 
-    files = [open(f"{dest_dir}/{base_name}_{i}.csv", "r", encoding="utf-8") for i in range(NUM_FILES)]
+    files = [open(f"{dest_dir}/{base_name}_{i}.csv", "w", encoding="utf-8") for i in range(NUM_FILES)]
     writers = [csv.writer(file) for file in files]
 
     if header:
