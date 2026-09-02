@@ -2,7 +2,8 @@
 #include <stdio.h>
 
 // USAGE: ./a.out [filepath.mtx]
-// Prints the filepath of Matrix Market file and column count.
+// Prints the filepath of Matrix Market file, row count, col count, and number
+// of nonzeros.
 int main(int argc, char *argv[]) {
     if (argc < 2) {
         fprintf(stderr, "USAGE: ./a.out [filepath.mtx]\n");
@@ -26,6 +27,6 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    printf("%s,%d\n", filepath, colsCount);
+    printf("%s,%d,%d,%d\n", filepath, rowsCount, colsCount, nnz);
     return 0;
 }

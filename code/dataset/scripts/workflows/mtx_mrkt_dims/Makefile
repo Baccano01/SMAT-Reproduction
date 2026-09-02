@@ -1,4 +1,4 @@
-TARGET := print_pathNcol
+TARGET := print_pathNdims
 SRC_DIR := src
 OBJ_DIR := obj
 MTX_MRKT_DIR := ../../../../mtx_mrkt_csr/include/matrix_market

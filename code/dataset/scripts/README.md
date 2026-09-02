@@ -12,7 +12,7 @@ desc: scripts for checking integrity of downloaded tarballs. Check each script f
 
 ### workflow/:
 desc: scripts and binaries for preprocessing downloaded tarballs. Check each script and eventual README for USAGE details.
-+ mtx_mrkt_col_counter - contains executable for printing the relative path of the Matrix Market file and the number of columns in the matrix sotred in the file.
++ mtx_mrkt_dims - contains executable for printing the relative path of the Matrix Market file, row count, col count, and number of nonzeros.
 + tar_extract_mtx_file.sh - script for extracing the .mtx file from a tarball file (.tar.gz)
 + extract_all_mtx_files.sh - driver script of tar_extract_mtx_file.sh to be used on the parent directory of the subdirectories that contain the tarballs.
-+ create_input_list.sh - script for creating input_list.csv that contains comma separated lines of 'mtx_filepath,col_count' from each Matrix Market (.mtx) file applied on the parent directory of the subdirectories that contain the tarballs.
++ create_input_list.sh - script for creating input_list.csv that contains comma separated lines of 'mtx_filepath,row_count,col_count,nnz' from each Matrix Market (.mtx) file applied on the parent directory of the subdirectories that contain the tarballs.

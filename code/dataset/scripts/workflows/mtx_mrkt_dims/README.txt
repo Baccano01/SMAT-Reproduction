@@ -14,5 +14,5 @@ make clean
 
 USAGE:
 """
-./print_pathNcol '[matrix_market_filepath.mtx]'
+./print_pathNdims '[matrix_market_filepath.mtx]'
 """

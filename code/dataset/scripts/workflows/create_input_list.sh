@@ -6,7 +6,7 @@ echo "============================="
 echo "Creating input list..."
 echo "============================="
 
-echo "mtx_filepath,col_count" > input_list.csv
+echo "mtx_filepath,row_count,col_count,nnz" > input_list.csv
 
 for dir in ../../matrices/*/; do
     echo "==============================="
@@ -14,7 +14,11 @@ for dir in ../../matrices/*/; do
     echo "==============================="
     for subdir in "${dir}"*/; do
         echo "==> $subdir"
-        ./print_pathNcol "${subdir}"/*.mtx >> input_list.csv
+        ./print_pathNdims "${subdir}"/*.mtx >> input_list.csv
     done
     echo
 done
+
+echo "============================="
+echo "input list created... :)"
+echo "============================="
