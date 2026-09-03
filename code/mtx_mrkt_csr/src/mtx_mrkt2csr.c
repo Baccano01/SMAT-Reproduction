@@ -48,9 +48,9 @@ int mtx_mrkt2csr(char *mtx_mrkt_path, double **A, int **J, int **I) {
   }
 
   if ((ret_code = mm_read_banner(f, &matcode)) != 0) {
-    printf("%s:%s:%d: %s\n", __FILE__, __func__, __LINE__,
+    fprintf(stderr, "%s:%s:%d: %s\n", __FILE__, __func__, __LINE__,
            mm_strerror(ret_code));
-    printf("Could not process Matrix Market banner.\n");
+    fprintf(stderr, "Could not process Matrix Market banner.\n");
     exit(EXIT_FAILURE);
   }
 
@@ -58,20 +58,22 @@ int mtx_mrkt2csr(char *mtx_mrkt_path, double **A, int **J, int **I) {
   /*  only supports a subset of the Matrix Market data types.      */
 
   int IS_UNSUPPORTED_TYPE =
-      (mm_is_complex(matcode) || mm_is_integer(matcode) ||
-       mm_is_pattern(matcode) || mm_is_array(matcode) || mm_is_dense(matcode));
+      (mm_is_complex(matcode) || mm_is_pattern(matcode) ||
+        mm_is_array(matcode) || mm_is_dense(matcode));
   if (IS_UNSUPPORTED_TYPE) {
-    printf("Sorry, this application does not support ");
-    printf("Market Market type: [%s]\n", mm_typecode_to_str(matcode));
+    fprintf(stderr, "%s:%s:%d: %s not supported\n", __FILE__, __func__,
+            __LINE__, mtx_mrkt_path);
+    fprintf(stderr, "Sorry, this application does not support ");
+    fprintf(stderr, "Market Market type: [%s]\n", mm_typecode_to_str(matcode));
     exit(EXIT_FAILURE);
   }
 
   /* find out size of sparse matrix .... */
 
   if ((ret_code = mm_read_mtx_crd_size(f, &M, &N, &nz)) != 0) {
-    printf("%s:%s:%d: %s\n", __FILE__, __func__, __LINE__,
+    fprintf(stderr, "%s:%s:%d: %s\n", __FILE__, __func__, __LINE__,
            mm_strerror(ret_code));
-    printf("Could not process Matrix Market size.\n");
+    fprintf(stderr, "Could not process Matrix Market size.\n");
     exit(EXIT_FAILURE);
   }
 

@@ -10,8 +10,8 @@
 
 #include <stdio.h>
 
-/// 1 GiB memory allocation limit
-#define MAX_ALLOC_BYTES (2ULL * 1024 * 1024 * 1024)
+/// 250 GiB memory allocation limit
+#define MAX_ALLOC_BYTES (250ULL * 1024 * 1024 * 1024)
 
 #define CHECK_VALIDITY_ALLOC(ineq, handler)                                    \
   do {                                                                         \
