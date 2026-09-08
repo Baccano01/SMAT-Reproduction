@@ -34,14 +34,11 @@ int csr2ell(double **A, int **I, int **J, int M, double **COEF, int **JCOEF) {
   j = 1;
   while (i < M && j < M) {
     // if I[i], I[j] < 0 then i++, j++
-    // if I[i] < 0, I[j] >= 0 then i++, j++
-    // cases above have been merged in the first if statement.
-    // if I[i] >= 0, I[j] < 0 then j++
+    // if i == j then j++
     // if I[i], I[j] >= 0 then max_ncols = max(., I[j] - I[i]), i++, j++
     if ((*I)[i] < 0) {
       i++;
-      j++;
-    } else if ((*I)[i] >= 0 && (*I)[j] < 0) {
+    } else if ((*I)[j] < 0 || i == j) {
       j++;
     } else if ((*I)[i] >= 0 && (*I)[j] >= 0) {
       len = (*I)[j] - (*I)[i];
@@ -57,11 +54,9 @@ int csr2ell(double **A, int **I, int **J, int M, double **COEF, int **JCOEF) {
 
   i = 0;
   j = 1;
-  while (i < M && j < M) {
+  while (i < M - 1) {
     // if I[i], I[j] < 0 then i++, j++
-    // if I[i] < 0, I[j] >= 0 then i++, j++
-    // cases above have been merged in the first if statement.
-    // if I[i] >= 0, I[j] < 0 then j++
+    // if i == j then j++
     // if I[i], I[j] >= 0 then max_ncols = max(., I[j] - I[i]), i++, j++
     if ((*I)[i] < 0) {
       // i-th row has no nonzeros, so fill it with default values
@@ -70,8 +65,7 @@ int csr2ell(double **A, int **I, int **J, int M, double **COEF, int **JCOEF) {
         (*JCOEF)[i * max_ncols + k] = JCOEF_SENTINEL;
       }
       i++;
-      j++;
-    } else if ((*I)[i] >= 0 && (*I)[j] < 0) {
+    } else if ((*I)[j] < 0 || i == j) {
       j++;
     } else if ((*I)[i] >= 0 && (*I)[j] >= 0) {
       len = (*I)[j] - (*I)[i];

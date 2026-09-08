@@ -48,6 +48,7 @@ int mtx_mrkt2csr(char *mtx_mrkt_path, double **A, int **J, int **I) {
   }
 
   if ((ret_code = mm_read_banner(f, &matcode)) != 0) {
+    fclose(f);
     fprintf(stderr, "%s:%s:%d: %s\n", __FILE__, __func__, __LINE__,
            mm_strerror(ret_code));
     fprintf(stderr, "Could not process Matrix Market banner.\n");
@@ -61,6 +62,7 @@ int mtx_mrkt2csr(char *mtx_mrkt_path, double **A, int **J, int **I) {
       (mm_is_complex(matcode) || mm_is_pattern(matcode) ||
         mm_is_array(matcode) || mm_is_dense(matcode));
   if (IS_UNSUPPORTED_TYPE) {
+    fclose(f);
     fprintf(stderr, "%s:%s:%d: %s not supported\n", __FILE__, __func__,
             __LINE__, mtx_mrkt_path);
     fprintf(stderr, "Sorry, this application does not support ");
@@ -71,6 +73,7 @@ int mtx_mrkt2csr(char *mtx_mrkt_path, double **A, int **J, int **I) {
   /* find out size of sparse matrix .... */
 
   if ((ret_code = mm_read_mtx_crd_size(f, &M, &N, &nz)) != 0) {
+    fclose(f);
     fprintf(stderr, "%s:%s:%d: %s\n", __FILE__, __func__, __LINE__,
            mm_strerror(ret_code));
     fprintf(stderr, "Could not process Matrix Market size.\n");
@@ -88,6 +91,7 @@ int mtx_mrkt2csr(char *mtx_mrkt_path, double **A, int **J, int **I) {
    * before we can allocate memory for the matrix, because of symmetry. */
 
   if (nz == 0) {
+    fclose(f);
     fprintf(stderr, "%s:%s:%d: 'nnz' is 0\n", __FILE__, __func__, __LINE__);
     exit(EXIT_FAILURE);
   }
@@ -122,6 +126,7 @@ int mtx_mrkt2csr(char *mtx_mrkt_path, double **A, int **J, int **I) {
    * in row. */
   COO = (entry *)malloc(nz * sizeof(entry));
   if (COO == NULL) {
+    fclose(f);
     fprintf(stderr, "failed to allocate memory for matrix.\n");
     exit(EXIT_FAILURE);
   }
@@ -158,16 +163,22 @@ int mtx_mrkt2csr(char *mtx_mrkt_path, double **A, int **J, int **I) {
    * in the original matrix. */
   *A = malloc(nz * sizeof(**A));
   if (A == NULL) {
+    free(COO);
     fprintf(stderr, "failed to allocate memory CSR 'A' array.\n");
     exit(EXIT_FAILURE);
   }
   *J = malloc(nz * sizeof(**J));
   if (J == NULL) {
+    free(A);
+    free(COO);
     fprintf(stderr, "failed to allocate memory CSR 'J' array.\n");
     exit(EXIT_FAILURE);
   }
   *I = (int *)malloc((M + 1) * sizeof(**I));
   if (I == NULL) {
+    free(A);
+    free(J);
+    free(COO);
     fprintf(stderr, "failed to allocate memory CSR 'I' array.\n");
     exit(EXIT_FAILURE);
   }

@@ -52,11 +52,15 @@ void ell_spmv(double **COEF, int **JCOEF, int max_ncols, int M, double **v,
   }
 
   int col, row;
-  for (col = 0; col < max_ncols; col++) {
-    for (row = 0; row < M; row++) {
-      if ((*JCOEF)[row * max_ncols + col] >= 0)
+
+  for (row = 0; row < M; row++) {
+    for (col = 0; col < max_ncols; col++) {
+        // only zeros remain at this row, so skip to next row
+        if ((*JCOEF)[row * max_ncols + col] < 0)
+            break;
+
         (*out)[row] += (*COEF)[row * max_ncols + col] *
-                       (*v)[(*JCOEF)[row * max_ncols + col]];
+                        (*v)[(*JCOEF)[row * max_ncols + col]];
     }
   }
 }
@@ -106,10 +110,19 @@ int main(int argc, char *argv[]) {
   out = NULL;
   ell_spmv(&COEF, &JCOEF, max_ncols, M - 1, &(v.data), &out);
 
+  double checksum = 0.0;
+  for (int i = 0; i < M - 1; i++) {
+        checksum += out[i];
+  }
+  printf("%lg\n", checksum);
+
+
+#if 0
   for (int i = 0; i < M - 1; i++) {
     printf(" [%lg]", out[i]);
   }
   printf("\n");
+#endif
 
   dv_free(&v);
   free(out);

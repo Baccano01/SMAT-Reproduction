@@ -100,10 +100,18 @@ int main(int argc, char *argv[]) {
   out = NULL;
   coo_spmv(&CA, &CI, &CJ, nnz, M - 1, &(v.data), &out);
 
+  double checksum = 0.0;
+  for (int i = 0; i < M - 1; i++) {
+        checksum += out[i];
+  }
+  printf("%lg\n", checksum);
+
+#if 0
   for (int i = 0; i < M - 1; i++) {
     printf(" [%lg]", out[i]);
   }
   printf("\n");
+#endif
 
   dv_free(&v);
   free(out);

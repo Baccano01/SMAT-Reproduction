@@ -55,8 +55,7 @@ void csr_spmv(double **A, int **I, int **J, int M, double **v, double **out) {
     if ((*I)[i] < 0) {
       /* i-th row has no nonzeros */
       i++;
-      j++;
-    } else if ((*I)[j] < 0) {
+    } else if ((*I)[j] < 0 || i == j) {
       /* i-th row has nonzeros but don't know how many */
       j++;
     } else {
@@ -104,10 +103,18 @@ int main(int argc, char *argv[]) {
   out = NULL;
   csr_spmv(&A, &I, &J, M, &(v.data), &out);
 
+  double checksum = 0.0;
+  for (int i = 0; i < M - 1; i++) {
+    checksum += out[i];
+  }
+  printf("%lg\n", checksum);
+
+#if 0
   for (int i = 0; i < M - 1; i++) {
     printf(" [%lg]", out[i]);
   }
   printf("\n");
+#endif
 
   dv_free(&v);
   free(A);

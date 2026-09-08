@@ -100,8 +100,11 @@ static int set_diagonals(int max_ndiags_pos, int max_ndiags_neg,
    * that serve as membership look-up */
 
   /* since each group of bits is a position */
-  bit_arr_len =
-      ceil((float)max_ndiags_pos / (float)(sizeof(**bit_arr_pos) * BYTE_WIDTH));
+  /* +1 otherwise only covers indices in [0, n-2] when need
+   * to cover n indices */
+  bit_arr_len = ceil(
+        (float)max_ndiags_pos / (float)(sizeof(**bit_arr_pos) * BYTE_WIDTH)
+        ) + 1;
 
   /* we to avoid zero allocation, if max_ndiags_pos < sizeof(int) */
   if (bit_arr_len <= 0)
@@ -117,8 +120,11 @@ static int set_diagonals(int max_ndiags_pos, int max_ndiags_neg,
    * that serve as membership look-up */
 
   /* since each group of bits is a position */
-  bit_arr_len =
-      ceil((float)max_ndiags_neg / (float)(sizeof(**bit_arr_neg) * BYTE_WIDTH));
+  /* +1 otherwise only covers indices in [0, n-2] when need
+   * to cover n indices */
+  bit_arr_len = ceil(
+        (float)max_ndiags_neg / (float)(sizeof(**bit_arr_neg) * BYTE_WIDTH)
+        ) + 1;
 
   /* we to avoid zero allocation, if max_ndiags_pos < sizeof(unsigned int) */
   if (bit_arr_len <= 0)
@@ -133,8 +139,7 @@ static int set_diagonals(int max_ndiags_pos, int max_ndiags_neg,
     /* i-th row only has no nonzeros. */
     if ((*I)[i] < 0) {
       i++;
-      j++;
-    } else if ((*I)[j] < 0) {
+    } else if ((*I)[j] < 0 || i == j) {
       j++;
     } else {
       for (k = (*I)[i]; k < (*I)[j]; k++) {
@@ -173,11 +178,8 @@ static int diag_len(int rows, int cols, int diag_offset) {
     /* Rectangular matrix case */
     /* lower diagonal */
     if (diag_offset < 0) {
-      diag_offset = abs(diag_offset);
-      if (diag_offset <= cols)
-        res = cols;
-      else
-        res = 2 * cols - diag_offset;
+      int potent_ext = rows + diag_offset;
+      res = potent_ext < cols ? potent_ext : cols;
     } else if (diag_offset > 0) {
       /* upper diagonal */
       res = main_diag_len - diag_offset;
@@ -191,10 +193,8 @@ static int diag_len(int rows, int cols, int diag_offset) {
       res = main_diag_len - abs(diag_offset);
     } else if (diag_offset > 0) {
       /* upper diagonal */
-      if (diag_offset <= rows)
-        res = rows;
-      else
-        res = 2 * rows - diag_offset;
+      int potent_ext = cols - diag_offset;
+      res = potent_ext < rows ? potent_ext : rows;
     } else {
       /* main diagonal */
       res = main_diag_len;
@@ -222,8 +222,7 @@ static int longest_diag_len(int M, int N, int **I, int **J) {
     /* i-th row only has no nonzeros. */
     if ((*I)[i] < 0) {
       i++;
-      j++;
-    } else if ((*I)[j] < 0) {
+    } else if ((*I)[j] < 0 || i == j) {
       j++;
     } else {
       for (k = (*I)[i]; k < (*I)[j]; k++) {
@@ -261,8 +260,12 @@ static int fill_ioff(int ndiags, int **IOFF, unsigned int **bit_arr_pos,
   ioff_idx = 0;
 
   /* process negative offsets */
-  bit_arr_neg_len =
-      ceil((float)max_ndiags_neg / (float)(sizeof(**bit_arr_neg) * BYTE_WIDTH));
+  /* +1 otherwise only covers indices in [0, n-2] when need
+   * to cover n indices */
+  bit_arr_neg_len = ceil(
+        (float)max_ndiags_neg / (float)(sizeof(**bit_arr_neg) * BYTE_WIDTH)
+    ) + 1;
+
   for (i = bit_arr_neg_len - 1; i >= 0; i--) {
     word = (*bit_arr_neg)[i];
 
@@ -282,20 +285,16 @@ static int fill_ioff(int ndiags, int **IOFF, unsigned int **bit_arr_pos,
     }
   }
 
-  if (ioff_idx >= ndiags) {
-    fprintf(stderr, "%s:%s:%d: IOFF 'ioff_idx'(%d) >= 'ndiags' (%d)\n",
-            __FILE__, __func__, __LINE__, ioff_idx, ndiags);
-    free(*IOFF);
-    free(*bit_arr_pos);
-    free(*bit_arr_neg);
-    exit(EXIT_FAILURE);
-  }
 
   int start_pos_idx = ioff_idx;
 
   /* process positive offsets */
-  bit_arr_pos_len =
-      ceil((float)max_ndiags_pos / (float)(sizeof(**bit_arr_pos) * BYTE_WIDTH));
+  /* +1 otherwise only covers indices in [0, n-2] when need
+   * to cover n indices */
+  bit_arr_pos_len = ceil(
+        (float)max_ndiags_pos / (float)(sizeof(**bit_arr_pos) * BYTE_WIDTH)
+    ) + 1;
+
   for (i = 0; i < bit_arr_pos_len; i++) {
     word = (*bit_arr_pos)[i];
 
@@ -314,7 +313,16 @@ static int fill_ioff(int ndiags, int **IOFF, unsigned int **bit_arr_pos,
       word &= (word - 1);
     }
   }
-  assert(ioff_idx == ndiags && "'ioff_idx' must be eq 'ndiags'");
+
+  if (ioff_idx < ndiags) {
+    fprintf(stderr, "%s:%s:%d: IOFF 'ioff_idx'(%d) < 'ndiags' (%d)\n",
+            __FILE__, __func__, __LINE__, ioff_idx, ndiags);
+    free(*IOFF);
+    free(*bit_arr_pos);
+    free(*bit_arr_neg);
+    exit(EXIT_FAILURE);
+  }
+
   return start_pos_idx;
 }
 
@@ -465,12 +473,12 @@ int csr2diag(double **A, int **I, int **J, int M, int N, double **DIAG,
   SAFE_MALLOC(max_diag_len, 1);
   **max_diag_len = longest_diag_len(M, N, I, J);
 
-  CHECK_OVERFLOW((size_t)(*max_diag_len) > SIZE_MAX / ndiags,
+  CHECK_OVERFLOW((size_t)(**max_diag_len) > SIZE_MAX / ndiags,
                  "nmemb for 'DIAG'", exit(EXIT_FAILURE));
 
   /* Check that DIAG dimension
    * doesn't overflow w.r.t. size_t */
-  CHECK_OVERFLOW((size_t)(*max_diag_len) * ndiags > SIZE_MAX / sizeof(**DIAG),
+  CHECK_OVERFLOW((size_t)(**max_diag_len) * ndiags > SIZE_MAX / sizeof(**DIAG),
                  "'DIAG'", exit(EXIT_FAILURE));
 
   size_t diag_bytes = (**max_diag_len) * ndiags * sizeof(double);
@@ -545,8 +553,7 @@ int csr2diag(double **A, int **I, int **J, int M, int N, double **DIAG,
       fill_diag(A, I, J, DIAG, IOFF, i, j, N, start_pos, ndiags,
                 &diags_next_idxs, &bit_arr_pos, &bit_arr_neg);
       i++;
-      j++;
-    } else if ((*I)[j] < 0) {
+    } else if ((*I)[j] < 0 || i == j) {
       j++;
     } else {
       /* i-th row with nonzeros */
@@ -574,6 +581,7 @@ int csr2diag(double **A, int **I, int **J, int M, int N, double **DIAG,
 int main(int argc, char *argv[]) {
   if (argc < 2) {
     fprintf(stderr, "USAGE: ./a.out [filename]\n");
+    return EXIT_FAILURE;
   }
   char *filename = argv[1];
 
