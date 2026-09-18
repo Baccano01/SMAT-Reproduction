@@ -90,7 +90,7 @@ static int set_diagonals(int max_ndiags_pos, int max_ndiags_neg,
 
   /* since each group of bits is a position */
   bit_arr_len =
-      ceil((float)max_ndiags_pos / (float)(sizeof(**bit_arr_pos) * BYTE_WIDTH));
+      ceil((float)max_ndiags_pos / (float)(sizeof(**bit_arr_pos) * BYTE_WIDTH)) + 1;
 
   /* we to avoid zero allocation, if max_ndiags_pos < sizeof(int) */
   if (bit_arr_len <= 0)
@@ -107,7 +107,7 @@ static int set_diagonals(int max_ndiags_pos, int max_ndiags_neg,
 
   /* since each group of bits is a position */
   bit_arr_len =
-      ceil((float)max_ndiags_neg / (float)(sizeof(**bit_arr_neg) * BYTE_WIDTH));
+      ceil((float)max_ndiags_neg / (float)(sizeof(**bit_arr_neg) * BYTE_WIDTH)) + 1;
 
   /* we to avoid zero allocation, if max_ndiags_pos < sizeof(unsigned int) */
   if (bit_arr_len <= 0)
@@ -122,8 +122,7 @@ static int set_diagonals(int max_ndiags_pos, int max_ndiags_neg,
     /* i-th row only has no nonzeros. */
     if ((*I)[i] < 0) {
       i++;
-      j++;
-    } else if ((*I)[j] < 0) {
+    } else if ((*I)[j] < 0 || i == j) {
       j++;
     } else {
       for (k = (*I)[i]; k < (*I)[j]; k++) {
@@ -143,6 +142,21 @@ static int set_diagonals(int max_ndiags_pos, int max_ndiags_neg,
 }
 
 
+double ER_DIAG(double nnz, double ndiags, double rows_count) {
+    if (ndiags <= 0) {
+        fprintf(stderr, "%s:%s:%d: Could not allocate memory.\n", __FILE__,
+                __func__, __LINE__);
+        exit(EXIT_FAILURE);
+    }
+    if (rows_count <= 0) {
+        fprintf(stderr, "%s:%s:%d: Could not allocate memory.\n", __FILE__,
+                __func__, __LINE__);
+        exit(EXIT_FAILURE);
+    }
+    return nnz / (ndiags * rows_count);
+}
+
+
 /* prints the number of diagonals with at least a nonzero */
 int main(int argc, char *argv[]) {
     if (argc < 2) {
@@ -154,25 +168,29 @@ int main(int argc, char *argv[]) {
 
     double *A = NULL;
     int *J = NULL, *I = NULL;
-    int rows_count, nz, i;
+    int M, nnz, i;
 
-    rows_count = mtx_mrkt2csr(filename, &A, &J, &I);
+    M = mtx_mrkt2csr(filename, &A, &J, &I);
 
     int cols_count;
     long ndiags;
     MM_DATA *mtx_data;
     mtx_data = read_mtx_data(filename);
     cols_count = get_col_count(mtx_data);
+    nnz = get_nnz(mtx_data);
 
     int max_ndiags_pos = cols_count;
-    int max_ndiags_neg = rows_count - 2;
+    int max_ndiags_neg = M - 2;
 
     unsigned int *bit_arr_pos, *bit_arr_neg;
 
     ndiags = set_diagonals(max_ndiags_pos, max_ndiags_neg, &bit_arr_pos,
-                           &bit_arr_neg, rows_count, &I, &J);
+                           &bit_arr_neg, M, &I, &J);
 
-    printf("%ld", ndiags);
+    double er_diag;
+    er_diag = ER_DIAG(nnz, ndiags, M - 1);
+
+    printf("%ld,%lg", ndiags, er_diag);
 
     free(bit_arr_neg);
     free(bit_arr_pos);
