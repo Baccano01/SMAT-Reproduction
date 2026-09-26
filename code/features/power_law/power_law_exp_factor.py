@@ -12,6 +12,8 @@ import powerlaw
 from scipy.io import mmread
 from scipy.sparse import issparse, csr_matrix
 
+import argparse
+
 
 N_PROCESSES = 1
 P_THRESHOLD = 0.05
@@ -177,5 +179,13 @@ def main(root_path, out_path):
 
 
 if __name__ == "__main__":
-    SAMPLES = input("Enter samples path:")
-    main(SAMPLES, "power_law.csv")
+    parser = argparse.ArgumentParser(
+        prog="PowerLawFactor",
+        description="Computes the power law exponential factor"
+    )
+
+    parser.add_argument("src", help="src path of the Matrix Market matrices")
+    parser.add_argument("dest", help="dest path of the output CSV file")
+
+    args = parser.parse_args()
+    main(args.src, args.dest)

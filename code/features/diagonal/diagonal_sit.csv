@@ -1,4 +1,4 @@
-matrix,Ndiags,NTdiags_ratio,ER_DIA
+Matrix,Ndiags,NTdiags_ratio,ER_DIA
 /home/jofeth/University/Master/AdvancedArchitecture/Project/SMAT/code/spmv/basic_diag/test/samples/b2_ss.mtx,1637,1.0,0.00237169
 /home/jofeth/University/Master/AdvancedArchitecture/Project/SMAT/code/spmv/basic_diag/test/samples/bcsstk11.mtx,181,0.8729281767955801,0.0669772
 /home/jofeth/University/Master/AdvancedArchitecture/Project/SMAT/code/spmv/basic_diag/test/samples/bcsstk12.mtx,181,0.8729281767955801,0.0669772
