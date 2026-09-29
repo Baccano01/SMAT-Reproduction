@@ -2,9 +2,10 @@
 
 set -euo pipefail
 
-SAMPLE="$1"
+SAMPLES="$1"
+EXEC="/home/jofeth/University/Master/AdvancedArchitecture/Project/SMAT/code/features/rows/row_nz/bin/row_stats"
 
-echo "Matrix,max_RD,var_RD,ER_ELL" > test.csv 2> err.out
-for s in "$SAMPLE"/*; do
-    ../bin/row_stats $(realpath "$s") >> test.csv 2>> err.out
-done
+echo "Matrix,max_RD,var_RD,ER_ELL"
+while read -r line; do
+    "$EXEC" $(realpath "$line")
+done <"$SAMPLES"

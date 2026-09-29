@@ -157,14 +157,14 @@ def parallel_analysis(files, writer):
 
 
 
-def main(root_path, out_path):
-    root = Path(root_path)
+def main(in_path, out_path):
+    ins = Path(in_path)
     out = Path(out_path)
 
-    files = sorted(
-        p for p in root.rglob("*.[m]*")
-        if p.is_file()
-    )
+    files = []
+    with ins.open("r", newline="", encoding="utf8") as f:
+        for line in f:
+            files.append(line.strip())
 
     total = len(files)
     print(f"total={total}")
@@ -177,14 +177,13 @@ def main(root_path, out_path):
 
         parallel_analysis(files, writer)
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         prog="PowerLawFactor",
         description="Computes the power law exponential factor"
     )
 
-    parser.add_argument("src", help="src path of the Matrix Market matrices")
+    parser.add_argument("src", help="src CSV path containing Matrix Market paths")
     parser.add_argument("dest", help="dest path of the output CSV file")
 
     args = parser.parse_args()
