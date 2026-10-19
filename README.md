@@ -1,9 +1,9 @@
 # SMAT-Reimplementation
 
-This repo contains my reimplementation without the original source code of the SMAT autotuner [https://dl.acm.org/doi/10.1145/2499370.2462181](J. Li et al., PLDI 2013).
+This repo contains my reimplementation without the original source code of the SMAT autotuner [J. Li et al., PLDI 2013](https://dl.acm.org/doi/10.1145/2499370.2462181).
 This autotuner dynamically selects the sparse matrix format (COO, CSR, ELL, DIA) to use during sparse matrix-vector multiplication. The kernels are written entirely in C.
 
-Uses a subset of [https://sparse.tamu.edu/](SuiteSparse Matrix Collection): 1285 matrices, each with at most 10K rows and columns.
+Uses a subset of [SuiteSparse Matrix Collection](https://sparse.tamu.edu/): 1285 matrices, each with at most 10K rows and columns.
 
 **Current still in progress: writing optimized kernels and model training in progress.**
 
